@@ -1,0 +1,29 @@
+syntax = "proto3";
+option go_package = "./proto";
+package proto;
+
+message User {
+  string id = 1;
+  string name = 3;
+}
+
+message Message {
+  string id = 1;
+  string content = 2;
+  string timestamp = 3;
+}
+
+message Connect {
+  User user = 1;
+  bool active = 2;
+}
+
+message Close {}
+
+
+service Broadcast {
+  //returns a stream of Messages
+  rpc CreateStream(Connect) returns (stream Message);
+  //describes how we return those Messages to the Client
+  rpc BroadcastMessage(Message) returns (Close);
+}
