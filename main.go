@@ -13,9 +13,9 @@ import (
 
 var grpcLog glog.LoggerV2
 
-func init_() {
+func init() {
 	grpcLog = glog.NewLoggerV2(os.Stdout, os.Stdout, os.Stdout)
-	grpcLog.Errorf("Error Happened")
+	//grpcLog.Errorf("Error Happened") //test
 }
 
 type Connection struct {
@@ -93,8 +93,8 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error creating the Server %v", err)
 	}
-	//grpcLog.Info("Starting server at port :8080")
-
+	grpcLog.Info("Starting server at port :8080")
+	//Register BroadcastServer on GRPc Server and passing to it our actual Server type
 	proto.RegisterBroadcastServer(grpcServer, server)
 	grpcServer.Serve(listener)
 
