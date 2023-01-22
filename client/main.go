@@ -39,13 +39,14 @@ func connect(user *proto.User) error {
 	wait.Add(1)
 	go func(str proto.Broadcast_CreateStreamClient) {
 		defer wait.Done()
-		for {
+
+		for { //infinite for loop
 			msg, err := str.Recv() //Waiting for messages from our  Server
 			if err != nil {
 				streamError = fmt.Errorf("Error reading message: %v", err)
 				break
 			}
-			//Printing out the Messages
+			//Printing out the Messages we received from a Server
 			fmt.Printf("%v : %s\n", msg.Id, msg.Content)
 		}
 
@@ -61,25 +62,26 @@ func main() {
 	timestamp := time.Now() //Get Time Stamp
 	done := make(chan int)  //Setup integer channel
 	name := flag.String("N", "Anonymous", "The name of the User")
-	flag.Parse()
+	flag.Parse()                                            //assure we have a value inside our 'name' variable before we create a hash
 	id := sha256.Sum256([]byte(timestamp.String() + *name)) //Generate an ID for the User
 
 	//******** Connecting to the Server" ***************
-	//We ae not using HTTPS in our Example
+	//We are not using HTTPS in our Example
 	conn, err := grpc.Dial("localhost:8080", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatalf("Couldnt Connect to the Service: %v", err)
 	}
 	//****Create new BroadCastClient on the Connection we made previously******
 	client = proto.NewBroadcastClient(conn)
+	////**** Create User based on info we've got earlier******
 	user := &proto.User{
 		Id:   hex.EncodeToString(id[:]),
 		Name: *name,
 	}
 	//***Connecting to our BroadCastClient with our User Credentials
-	connect(user)
+	connect(user) //"func connect(user *proto.User) error"
 
-	wait.Add(1) //Incrementing our Wait Group because we are creating another Go Routine
+	wait.Add(1) //Incrementing our Wait Group because we are creating another Go Routine in next step
 
 	//********** Creating Message Handling Loop(goroutine) for our User
 	go func() {
@@ -88,7 +90,7 @@ func main() {
 		scanner := bufio.NewScanner(os.Stdin)
 		//Loops until there no more Input
 		for scanner.Scan() {
-			//For each of the Loops we're creating a new Message
+			//For each of the Loops we're creating a new Message with Content which comes from the Scanner
 			msg := &proto.Message{
 				Id:        user.Id,
 				Content:   scanner.Text(),
@@ -102,10 +104,10 @@ func main() {
 			}
 		}
 	}()
-	//Another goroutine waiting for our WaitGroup to decrement all the way down
+	//******* Another goroutine waiting for our WaitGroup to decrement all the way down *******
 	go func() {
-		wait.Wait()
-		close(done)
+		wait.Wait() //blocks until WaitGroup counter is zero
+		close(done) //Closes 'done' channel
 	}()
 
 	//Waiting until the 'wait' channel sends back something

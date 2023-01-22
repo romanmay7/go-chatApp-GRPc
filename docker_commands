@@ -1,0 +1,9 @@
+
+//BUILD our Container
+docker build --tag=go-app-docker_example .
+
+//RUN our Container and Bind Port 8080 on Local Machine to Container's Port 8080
+docker run -it -p 8080:8080 go-app-docker_example
+
+//Or RUN our Container and Bind Port 8080 on Local Machine to Container's Port 8080 + Enter its Bash Shell 
+docker run -it -p 8080:8080 go-app-docker_example bash

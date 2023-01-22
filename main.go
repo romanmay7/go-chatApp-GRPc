@@ -26,7 +26,7 @@ type Connection struct {
 }
 
 //*******************************************************************************
-//'Server' type implements 'BroadcastServer' interface methods from 'service.proto'
+//'Server' type implements 'BroadcastServer' interface methods("CreateStream" and "BroadcastMessage") from 'service.proto'
 type Server struct {
 	ConnectionsPool []*Connection //slice of pointers to various Connections
 }
@@ -47,10 +47,10 @@ func (s *Server) CreateStream(pconn *proto.Connect, stream proto.Broadcast_Creat
 
 func (s *Server) BroadcastMessage(ctx context.Context, msg *proto.Message) (*proto.Close, error) { //returns tuple
 	waitGroup := sync.WaitGroup{} //Waits for the  "collection of goroutines" to finish
-	done := make(chan int)        //Use it to know when all our goroutines are finished
+	done := make(chan int)        //Use this channel to know when all our goroutines are finished
 
 	for _, conn := range s.ConnectionsPool {
-		waitGroup.Add(1) //Incrementing WaitGroup Counter
+		waitGroup.Add(1) //Incrementing WaitGroup Counter on adding new goroutine
 
 		//for each connection in the Pool ,spawn a goroutine
 		go func(msg *proto.Message, conn *Connection) {
@@ -72,12 +72,13 @@ func (s *Server) BroadcastMessage(ctx context.Context, msg *proto.Message) (*pro
 		}(msg, conn)
 	}
 
-	//Create and Call a Goroutine
+	//Create and Call a Goroutine which
+	//Waits until all goroutines from waitGroup group finish and exit
 	go func() {
-		//Waits until all goroutines from the wait group Exit
 		waitGroup.Wait() //(blocks until group Counter is Zero ).
 		close(done)
 	}()
+
 	<-done                     //empty done channel before return from the function
 	return &proto.Close{}, nil //return expected tuple
 }

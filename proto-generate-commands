@@ -1,0 +1,5 @@
+D:\Development\Go_Projects\chatApp-GRPc> protoc --proto_path=proto --proto_path=third_party --go_out=plugins=grpc:proto service.proto
+D:\Development\Go_Projects\chatApp-GRPc> protoc --go_out=. --go_opt=paths=source_relative proto/service.proto
+D:\Development\Go_Projects\chatApp-GRPc> protoc --go_out=. --go-grpc_out=. proto/service.proto
+
+Variations of this command will generate : "service.pb.go"  and "service_grpc.pb.go" based on your 'proto/service.proto'

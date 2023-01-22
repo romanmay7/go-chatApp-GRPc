@@ -22,7 +22,7 @@ message Close {}
 
 
 service Broadcast {
-  //returns a stream of Messages
+  //returns a stream of Messages on connect to the server
   rpc CreateStream(Connect) returns (stream Message);
   //describes how we return those Messages to the Client
   rpc BroadcastMessage(Message) returns (Close);
